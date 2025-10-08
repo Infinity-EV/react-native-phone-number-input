@@ -1,5 +1,6 @@
 import React, { useEffect, useState, type ReactNode } from "react";
 import type { FlatListProps, ImageSourcePropType, ImageStyle, ModalProps, StyleProp, ViewStyle } from "react-native";
+import type { Edge } from "react-native-safe-area-context";
 import { useContext } from "./CountryContext";
 import CountryFilter, { type CountryFilterProps } from "./CountryFilter";
 import CountryList from "./CountryList";
@@ -37,6 +38,7 @@ export type CountryPickerProps = {
     countryCodes?: CountryCode[];
     excludeCountries?: CountryCode[];
     preferredCountries?: CountryCode[];
+    modalSafeAreaEdges?: Edge[];
     modalProps?: ModalProps;
     filterProps?: CountryFilterProps;
     flatListProps?: FlatListProps<Country>;
@@ -75,6 +77,7 @@ const CountryPicker: React.FC<CountryPickerProps> = ({
     renderFlagButton: renderButton,
     renderCountryFilter,
     filterProps,
+    modalSafeAreaEdges,
     modalProps,
     flatListProps,
     onSelect,
@@ -181,7 +184,7 @@ const CountryPicker: React.FC<CountryPickerProps> = ({
         <>
             {withModal && renderFlagButton(flagProp)}
             <CountryModal
-                {...{ visible, withModal, disableNativeModal, ...modalProps }}
+                {...{ visible, withModal, modalSafeAreaEdges, disableNativeModal, ...modalProps }}
                 onRequestClose={onClose}
                 onDismiss={onClose}>
                 <HeaderModal

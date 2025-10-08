@@ -1,5 +1,6 @@
 import * as React from "react";
-import { type ModalProps, Platform, SafeAreaView, StyleSheet } from "react-native";
+import { type ModalProps, Platform, StyleSheet } from "react-native";
+import { type Edge, SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import AnimatedModal from "./AnimatedModal";
 import { CountryModalContext } from "./CountryModalProvider";
 import { useTheme } from "./CountryTheme";
@@ -13,6 +14,7 @@ const styles = StyleSheet.create({
 
 const CountryModal = ({
     animationType = "slide",
+    modalSafeAreaEdges,
     withModal = true,
     disableNativeModal = false,
     children,
@@ -20,11 +22,18 @@ const CountryModal = ({
 }: ModalProps & {
     children: React.ReactNode;
     withModal?: boolean;
+    modalSafeAreaEdges?: Edge[];
     disableNativeModal?: boolean;
 }) => {
     const { backgroundColor } = useTheme();
     const { teleport } = React.useContext(CountryModalContext);
-    const content = <SafeAreaView style={[styles.container, { backgroundColor }]}>{children}</SafeAreaView>;
+    const content = (
+        <SafeAreaProvider>
+            <SafeAreaView edges={modalSafeAreaEdges} style={[styles.container, { backgroundColor }]}>
+                {children}
+            </SafeAreaView>
+        </SafeAreaProvider>
+    );
     React.useEffect(() => {
         if (disableNativeModal) {
             teleport!(<AnimatedModal {...props}>{content}</AnimatedModal>);
