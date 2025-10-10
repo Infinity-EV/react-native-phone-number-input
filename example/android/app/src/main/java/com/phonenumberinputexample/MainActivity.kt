@@ -1,4 +1,4 @@
-package phonenumberinput.example
+package com.phonenumberinputexample
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

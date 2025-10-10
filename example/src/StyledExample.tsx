@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { StyleSheet, View, Text } from "react-native";
 import PhoneInput from "@linhnguyen96114/react-native-phone-input";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 const StyledExample = () => {
     const [value, setValue] = useState("");

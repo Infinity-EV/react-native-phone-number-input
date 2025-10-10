@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import PhoneInput from "@linhnguyen96114/react-native-phone-input";
+import { useState } from "react";
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const FormExample = () => {
     const [phone, setPhone] = useState("");

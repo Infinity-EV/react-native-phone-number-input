@@ -1,4 +1,4 @@
-package phonenumberinput.example
+package com.phonenumberinputexample
 
 import android.app.Application
 import com.facebook.react.PackageList
