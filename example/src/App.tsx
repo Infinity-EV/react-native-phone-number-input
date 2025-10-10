@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import PhoneInput from "@linhnguyen96114/react-native-phone-input";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 import type { PhoneInputRefType } from "../..";
@@ -175,14 +175,16 @@ const App = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Phone Input Examples</Text>
-                <Text style={styles.headerSubtitle}>React Native Phone Number Input Demo</Text>
-            </View>
-            {renderExample()}
-        </SafeAreaView>
+        <SafeAreaProvider>
+            <SafeAreaView style={styles.container}>
+                <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Phone Input Examples</Text>
+                    <Text style={styles.headerSubtitle}>React Native Phone Number Input Demo</Text>
+                </View>
+                {renderExample()}
+            </SafeAreaView>
+        </SafeAreaProvider>
     );
 };
 

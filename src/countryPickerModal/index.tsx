@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { FlatListProps, ModalProps, StyleProp, ViewStyle } from "react-native";
+import type { Edge } from "react-native-safe-area-context";
 import { CountryProvider, DEFAULT_COUNTRY_CONTEXT } from "./CountryContext";
 import type { CountryFilterProps } from "./CountryFilter";
 import CountryPicker, { type CountryPickerProps } from "./CountryPicker";
@@ -17,6 +18,7 @@ export type CountryPickerModalProps = CountryPickerProps & {
     preferredCountries?: CountryCode[];
     theme?: Theme;
     translation?: TranslationLanguageCode;
+    modalSafeAreaEdges?: Edge[];
     modalProps?: ModalProps;
     filterProps?: CountryFilterProps;
     flatListProps?: FlatListProps<Country>;
