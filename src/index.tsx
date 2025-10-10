@@ -121,6 +121,8 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
 
     const onSelect = React.useCallback(
         (country: Country) => {
+            if (!props.onChangeCountry) return;
+
             setCountryCode(country.cca2);
             setCode(country.callingCode[0]);
 
@@ -132,9 +134,7 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
                 }
             }
 
-            if (props.onChangeCountry) {
-                props.onChangeCountry(country);
-            }
+            props.onChangeCountry(country);
         },
         [number, props]
     );
@@ -172,10 +172,32 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
         getCountryCode: () => countryCode,
         getCallingCode: () => code,
         isValidNumber: (phoneNumber: string) => {
+            if (!phoneNumber || !countryCode) {
+                return false;
+            }
             try {
-                const parsedNumber = phoneUtil.parse(phoneNumber, countryCode);
+                let cleanNumber = phoneNumber.replace(/[^\d+]/g, "");
+                if (cleanNumber.startsWith("0")) {
+                    cleanNumber = cleanNumber.substring(1);
+                }
+                if (!cleanNumber) {
+                    return false;
+                }
+                const parsedNumber = phoneUtil.parse(cleanNumber, countryCode);
                 return phoneUtil.isValidNumber(parsedNumber);
             } catch (err) {
+                try {
+                    if (code) {
+                        let cleanNumber = phoneNumber.replace(/[^\d+]/g, "");
+                        if (cleanNumber.startsWith("0")) {
+                            cleanNumber = cleanNumber.substring(1);
+                        }
+                        const parsedNumber = phoneUtil.parse(cleanNumber, code);
+                        return phoneUtil.isValidNumber(parsedNumber);
+                    }
+                } catch (fallbackErr) {
+                    return false;
+                }
                 return false;
             }
         },
