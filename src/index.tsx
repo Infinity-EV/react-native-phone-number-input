@@ -124,8 +124,6 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
 
     const onSelect = React.useCallback(
         (country: Country) => {
-            if (!props.onChangeCountry) return;
-
             setCountryCode(country.cca2);
             setCode(country.callingCode[0]);
 
@@ -144,7 +142,9 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
                 }
             }
 
-            props.onChangeCountry(country);
+            if (props.onChangeCountry) {
+                props.onChangeCountry(country);
+            }
         },
         [number, props]
     );

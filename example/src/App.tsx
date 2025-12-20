@@ -9,6 +9,7 @@ import CustomStyledExample from "./CustomStyledExample";
 import FormExample from "./FormExample";
 import StyledExample from "./StyledExample";
 import ValidationExample from "./ValidationExample";
+import MaskingExample from "./MaskingExample";
 
 type ExampleComponent = React.ReactNode;
 
@@ -47,6 +48,12 @@ const EXAMPLES: Array<{
         component: <FormExample />,
         description: "Example of phone input in a form with validation",
         icon: "📝"
+    },
+    {
+        title: "Phone Number Masking",
+        component: <MaskingExample />,
+        description: "Auto-format phone numbers as you type with masking",
+        icon: "🎭"
     }
 ];
 
