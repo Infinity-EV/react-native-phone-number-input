@@ -18,6 +18,21 @@ export interface PhoneInputProps {
     /** Add shadow effect to the input container */
     withShadow?: boolean;
 
+    /** Enable phone number masking with country-specific formatting patterns.
+     * When enabled, the input will display formatted phone numbers (e.g., US: (123) 456-7890, VN: 012 345 6789).
+     * The `onChangeText` callback will receive unformatted digits only,
+     * while `onChangeFormattedText` will receive the masked value with country code.
+     * @default false
+     * @example
+     * // With masking enabled
+     * <PhoneInput withMask defaultCode="US" onChangeText={(text) => console.log(text)} />
+     * // User types: 1234567890
+     * // Display shows: (123) 456-7890
+     * // onChangeText receives: "1234567890"
+     * // onChangeFormattedText receives: "+11234567890"
+     */
+    withMask?: boolean;
+
     /** Automatically focus the input when component mounts */
     autoFocus?: boolean;
 
