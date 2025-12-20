@@ -25,6 +25,7 @@ import CountryPicker, {
     type CountryFilterProps,
     type CountryPickerModalProps
 } from "./countryPickerModal";
+import { applyMask, getMaskForCountry, removeMask } from "./maskUtils";
 import styles from "./styles";
 
 const dropDown =
@@ -34,6 +35,7 @@ const phoneUtil = PhoneNumberUtil.getInstance();
 export type PhoneInputProps = {
     withDarkTheme?: boolean;
     withShadow?: boolean;
+    withMask?: boolean;
     autoFocus?: boolean;
     defaultCode?: CountryCode;
     defaultCallingCode?: string;
@@ -86,6 +88,7 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
         props.defaultCallingCode || (props.defaultCode ? undefined : "91")
     );
     const [number, setNumber] = React.useState<string | undefined>(undefined);
+    const [displayValue, setDisplayValue] = React.useState<string>("");
     const [modalVisible, setModalVisible] = React.useState<boolean>(false);
     const [countryCode, setCountryCode] = React.useState<CountryCode>(props.defaultCode || "IN");
     const [disabled, setDisabled] = React.useState<boolean>(props.disabled || false);
@@ -121,10 +124,15 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
 
     const onSelect = React.useCallback(
         (country: Country) => {
-            if (!props.onChangeCountry) return;
-
             setCountryCode(country.cca2);
             setCode(country.callingCode[0]);
+
+            // Re-apply mask with new country pattern if masking is enabled
+            if (props.withMask && number) {
+                const newMask = getMaskForCountry(country.cca2);
+                const masked = applyMask(number, newMask);
+                setDisplayValue(masked);
+            }
 
             if (props.onChangeFormattedText) {
                 if (country.callingCode[0]) {
@@ -134,26 +142,64 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
                 }
             }
 
-            props.onChangeCountry(country);
+            if (props.onChangeCountry) {
+                props.onChangeCountry(country);
+            }
         },
         [number, props]
     );
 
     const onChangeText = React.useCallback(
         (text: string) => {
-            setNumber(text);
-            if (props.onChangeText) {
-                props.onChangeText(text);
-            }
-            if (props.onChangeFormattedText) {
-                if (code) {
-                    props.onChangeFormattedText(text.length > 0 ? `+${code}${text}` : text);
-                } else {
-                    props.onChangeFormattedText(text);
+            const { withMask = false } = props;
+
+            if (withMask) {
+                // Get the mask pattern for current country
+                const mask = getMaskForCountry(countryCode);
+
+                // Remove mask from input to get raw digits
+                const rawDigits = removeMask(text);
+
+                // Apply mask to get display value
+                const masked = applyMask(rawDigits, mask);
+
+                // Update display value
+                setDisplayValue(masked);
+
+                // Store raw digits internally
+                setNumber(rawDigits);
+
+                // Pass raw digits to onChangeText callback
+                if (props.onChangeText) {
+                    props.onChangeText(rawDigits);
+                }
+
+                // Pass masked value with country code to onChangeFormattedText
+                if (props.onChangeFormattedText) {
+                    if (code) {
+                        props.onChangeFormattedText(rawDigits.length > 0 ? `+${code}${rawDigits}` : rawDigits);
+                    } else {
+                        props.onChangeFormattedText(rawDigits);
+                    }
+                }
+            } else {
+                // Original behavior when masking is disabled
+                setNumber(text);
+                setDisplayValue(text);
+
+                if (props.onChangeText) {
+                    props.onChangeText(text);
+                }
+                if (props.onChangeFormattedText) {
+                    if (code) {
+                        props.onChangeFormattedText(text.length > 0 ? `+${code}${text}` : text);
+                    } else {
+                        props.onChangeFormattedText(text);
+                    }
                 }
             }
         },
-        [code, props]
+        [code, countryCode, props]
     );
 
     const renderDefaultDropdownImage = React.useMemo(() => {
@@ -216,6 +262,7 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
     const {
         withShadow,
         withDarkTheme,
+        withMask = false,
         codeTextStyle,
         textInputProps,
         textInputStyle,
@@ -275,7 +322,11 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, PhoneInputProps>((props, 
                         style={[styles.numberText, textInputStyle]}
                         placeholder={placeholder}
                         onChangeText={onChangeText}
-                        value={number || props.value || props.defaultValue || ""}
+                        value={
+                            withMask
+                                ? displayValue || props.value || props.defaultValue || ""
+                                : number || props.value || props.defaultValue || ""
+                        }
                         editable={!disabled}
                         selectionColor="black"
                         keyboardAppearance={withDarkTheme ? "dark" : "default"}

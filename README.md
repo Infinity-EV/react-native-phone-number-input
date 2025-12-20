@@ -27,6 +27,7 @@
 - 🏳️ Country emoji flags support
 - 📞 Automatic country detection
 - 🎨 Dark theme support
+- 🎭 Country-specific phone number masking
 - 🔧 Extensive API
 
 ## 🚀 Installation
@@ -164,12 +165,41 @@ const FormExample = () => {
 };
 ```
 
+### Phone Number Masking
+
+```tsx
+const MaskingExample = () => {
+  const [value, setValue] = useState('');
+  const [formattedValue, setFormattedValue] = useState('');
+
+  return (
+    <PhoneInput
+      defaultValue={value}
+      defaultCode="US"
+      onChangeText={setValue}
+      onChangeFormattedText={setFormattedValue}
+      withMask
+      withShadow
+      containerStyle={{
+        width: '100%',
+        borderRadius: 12,
+      }}
+    />
+  );
+};
+// User types: 1234567890
+// Display shows: (123) 456-7890
+// onChangeText receives: "1234567890"
+// onChangeFormattedText receives: "+11234567890"
+```
+
 ## 🛠️ Props
 
 | Prop                       | Type                         | Description                          |
 |----------------------------|------------------------------|--------------------------------------|
 | `withDarkTheme`            | `boolean`                    | Enable dark theme                    |
 | `withShadow`               | `boolean`                    | Add shadow effect                    |
+| `withMask`                 | `boolean`                    | Enable country-specific phone masking |
 | `autoFocus`                | `boolean`                    | Auto focus input                     |
 | `defaultCode`              | `CountryCode`                | Default country code                 |
 | `defaultCallingCode`       | `string`                     | Default calling code                  |
