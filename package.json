@@ -130,19 +130,29 @@
         ]
     },
     "release-it": {
+        "ci": true,
         "git": {
             "commitMessage": "chore: release ${version}",
-            "tagName": "v${version}"
+            "tagName": "v${version}",
+            "requireCleanWorkingDir": false,
+            "requireUpstream": false
         },
         "npm": {
             "publish": true
         },
         "github": {
-            "release": true
+            "release": true,
+            "releaseName": "v${version}",
+            "autoGenerate": false
+        },
+        "hooks": {
+            "after:bump": "echo 'Version bumped to ${version}'"
         },
         "plugins": {
             "@release-it/conventional-changelog": {
-                "preset": "angular"
+                "preset": "angular",
+                "infile": "CHANGELOG.md",
+                "header": "# Changelog\n\nAll notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines."
             }
         }
     },
