@@ -1,35 +1,24 @@
 import { PhoneNumberUtil } from "google-libphonenumber"
 import React from "react"
 import {
-  Image,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  type StyleProp,
-  type TextInputProps,
-  type TextStyle,
-  type ViewStyle,
 } from "react-native"
 
 import CountryPicker, {
   CountryModalProvider,
   DARK_THEME,
   DEFAULT_THEME,
-  Flag,
   getCallingCode,
   loadDataAsync,
   type CallingCode,
   type Country,
   type CountryCode,
-  type CountryFilterProps,
-  type CountryPickerModalProps,
 } from "./countryPickerModal"
 import { applyMask, getMaskForCountry, removeMask } from "./maskUtils"
 import styles from "./styles"
-
-const dropDown =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAi0lEQVRYR+3WuQ6AIBRE0eHL1T83FBqU5S1szdiY2NyTKcCAzU/Y3AcBXIALcIF0gRPAsehgugDEXnYQrUC88RIgfpuJ+MRrgFmILN4CjEYU4xJgFKIa1wB6Ec24FuBFiHELwIpQxa0ALUId9wAkhCnuBdQQ5ngP4I9wxXsBDyJ9m+8y/g9wAS7ABW4giBshQZji3AAAAABJRU5ErkJggg=="
 
 const phoneUtil = PhoneNumberUtil.getInstance()
 
@@ -188,7 +177,6 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
     textInputStyle,
     textInputProps,
     placeholder,
-    layout = "first",
     showCountryCode = true,
     countryPickerProps = {
       theme: withDarkTheme ? DARK_THEME : DEFAULT_THEME,
