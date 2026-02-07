@@ -12,6 +12,7 @@ import CountryPicker, {
   CountryModalProvider,
   DARK_THEME,
   DEFAULT_THEME,
+  Flag,
   getCallingCode,
   loadDataAsync,
   type CallingCode,
@@ -56,7 +57,7 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
   const [countryCode, setCountryCode] = React.useState<CountryCode>(
     props.defaultCode || "US"
   )
-  const [code, setCode] = React.useState<string | undefined>(undefined)
+  const [callingCode, setCallingCode] = React.useState<string | undefined>()
   const [number, setNumber] = React.useState("")
   const [displayValue, setDisplayValue] = React.useState("")
   const [modalVisible, setModalVisible] = React.useState(false)
@@ -66,14 +67,14 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
     if (props.defaultCallingCode) {
       getCountryCodeByCallingCode(props.defaultCallingCode).then((cca2) => {
         setCountryCode(cca2)
-        setCode(props.defaultCallingCode)
+        setCallingCode(props.defaultCallingCode)
       })
     }
   }, [props.defaultCallingCode, getCountryCodeByCallingCode])
 
   React.useEffect(() => {
     if (props.defaultCode) {
-      getCallingCode(props.defaultCode).then(setCode)
+      getCallingCode(props.defaultCode).then(setCallingCode)
     }
   }, [props.defaultCode])
 
@@ -84,7 +85,7 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
   const applyCountry = React.useCallback(
     (country: Country) => {
       setCountryCode(country.cca2)
-      setCode(country.callingCode[0])
+      setCallingCode(country.callingCode[0])
 
       if (props.withMask) {
         const mask = getMaskForCountry(country.cca2)
@@ -124,31 +125,33 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
       }
 
       props.onChangeText?.(raw)
-      props.onChangeFormattedText?.(code ? `+${code}${raw}` : raw)
+      props.onChangeFormattedText?.(
+        callingCode ? `+${callingCode}${raw}` : raw
+      )
     },
-    [code, countryCode, props]
+    [callingCode, countryCode, props]
   )
 
   React.useImperativeHandle(ref, () => ({
     getCountryCode: () => countryCode,
-    getCallingCode: () => code,
+    getCallingCode: () => callingCode,
 
     setCountryCode: async (cca2: CountryCode) => {
-      const callingCode = await getCallingCode(cca2)
-      if (!callingCode) return
+      const cc = await getCallingCode(cca2)
+      if (!cc) return
 
       applyCountry({
         cca2,
-        callingCode: [callingCode],
+        callingCode: [cc],
       } as Country)
     },
 
-    setCallingCode: async (callingCode: string) => {
-      const cca2 = await getCountryCodeByCallingCode(callingCode)
+    setCallingCode: async (cc: string) => {
+      const cca2 = await getCountryCodeByCallingCode(cc)
 
       applyCountry({
         cca2,
-        callingCode: [callingCode],
+        callingCode: [cc],
       } as Country)
     },
 
@@ -165,7 +168,7 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
       const clean = number.startsWith("0") ? number.slice(1) : number
       return {
         number: clean,
-        formattedNumber: code ? `+${code}${clean}` : clean,
+        formattedNumber: callingCode ? `+${callingCode}${clean}` : clean,
       }
     },
   }))
@@ -173,11 +176,12 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
   const {
     withShadow,
     withDarkTheme,
-    containerStyle,
-    textContainerStyle,
+    codeTextStyle,
     textInputStyle,
     textInputProps,
-    codeTextStyle,
+    flagButtonStyle,
+    containerStyle,
+    textContainerStyle,
     renderDropdownImage,
     disableArrowIcon,
     placeholder,
@@ -191,45 +195,50 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
     <CountryModalProvider>
       <View style={[styles.container, withShadow && styles.shadow, containerStyle]}>
         <TouchableOpacity
+          style={[styles.flagButtonView, flagButtonStyle]}
           disabled={disabled}
-          style={styles.flagButtonView}
           onPress={() => setModalVisible(true)}
         >
           <CountryPicker
+            onSelect={onSelect}
+            countryCode={countryCode}
+            withFlag
+            withCallingCode
             visible={modalVisible}
             onClose={() => setModalVisible(false)}
-            countryCode={countryCode}
-            withCallingCode
-            withFlag
-            onSelect={onSelect}
+            renderFlagButton={() => (
+              <Flag
+                countryCode={countryCode}
+                flagSize={DEFAULT_THEME.flagSize}
+              />
+            )}
             {...countryPickerProps}
           />
 
-          {showCountryCode && code && (
+          {showCountryCode && callingCode && (
             <Text style={[styles.codeText, codeTextStyle]}>
-              {`+${code}`}
+              {`+${callingCode}`}
             </Text>
           )}
 
-          {!disableArrowIcon && (
-            renderDropdownImage ?? (
+          {!disableArrowIcon &&
+            (renderDropdownImage ?? (
               <Image
                 source={{ uri: dropDown }}
                 resizeMode="contain"
                 style={styles.dropDownImage}
               />
-            )
-          )}
+            ))}
         </TouchableOpacity>
 
         <View style={[styles.textContainer, textContainerStyle]}>
           <TextInput
-            value={props.withMask ? displayValue : number}
-            onChangeText={onChangeText}
-            placeholder={placeholder}
-            keyboardType="phone-pad"
-            editable={!disabled}
             style={[styles.numberText, textInputStyle]}
+            placeholder={placeholder}
+            onChangeText={onChangeText}
+            value={props.withMask ? displayValue : number}
+            editable={!disabled}
+            keyboardType="phone-pad"
             {...textInputProps}
           />
         </View>
