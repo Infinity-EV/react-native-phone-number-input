@@ -12,7 +12,6 @@ import CountryPicker, {
   CountryModalProvider,
   DARK_THEME,
   DEFAULT_THEME,
-  Flag,
   getCallingCode,
   loadDataAsync,
   type CallingCode,
