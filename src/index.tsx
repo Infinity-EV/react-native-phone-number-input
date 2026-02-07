@@ -1,7 +1,6 @@
 import { PhoneNumberUtil } from "google-libphonenumber"
 import React from "react"
 import {
-  Image,
   Text,
   TextInput,
   TouchableOpacity,
@@ -12,7 +11,6 @@ import CountryPicker, {
   CountryModalProvider,
   DARK_THEME,
   DEFAULT_THEME,
-  Flag,
   getCallingCode,
   loadDataAsync,
   type CallingCode,
@@ -21,9 +19,6 @@ import CountryPicker, {
 } from "./countryPickerModal"
 import { applyMask, getMaskForCountry, removeMask } from "./maskUtils"
 import styles from "./styles"
-
-const dropDown =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAi0lEQVRYR+3WuQ6AIBRE0eHL1T83FBqU5S1szdiY2NyTKcCAzU/Y3AcBXIALcIF0gRPAsehgugDEXnYQrUC88RIgfpuJ+MRrgFmILN4CjEYU4xJgFKIa1wB6Ec24FuBFiHELwIpQxa0ALUId9wAkhCnuBdQQ5ngP4I9wxXsBDyJ9m+8y/g9wAS7ABW4giBshQZji3AAAAABJRU5ErkJggg=="
 
 const phoneUtil = PhoneNumberUtil.getInstance()
 
@@ -57,9 +52,9 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
   const [countryCode, setCountryCode] = React.useState<CountryCode>(
     props.defaultCode || "US"
   )
-  const [callingCode, setCallingCode] = React.useState<string | undefined>()
-  const [number, setNumber] = React.useState("")
-  const [displayValue, setDisplayValue] = React.useState("")
+  const [code, setCode] = React.useState<string | undefined>(undefined)
+  const [number, setNumber] = React.useState<string>("")
+  const [displayValue, setDisplayValue] = React.useState<string>("")
   const [modalVisible, setModalVisible] = React.useState(false)
   const [disabled, setDisabled] = React.useState(!!props.disabled)
 
@@ -67,14 +62,14 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
     if (props.defaultCallingCode) {
       getCountryCodeByCallingCode(props.defaultCallingCode).then((cca2) => {
         setCountryCode(cca2)
-        setCallingCode(props.defaultCallingCode)
+        setCode(props.defaultCallingCode)
       })
     }
   }, [props.defaultCallingCode, getCountryCodeByCallingCode])
 
   React.useEffect(() => {
     if (props.defaultCode) {
-      getCallingCode(props.defaultCode).then(setCallingCode)
+      getCallingCode(props.defaultCode).then(setCode)
     }
   }, [props.defaultCode])
 
@@ -85,7 +80,7 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
   const applyCountry = React.useCallback(
     (country: Country) => {
       setCountryCode(country.cca2)
-      setCallingCode(country.callingCode[0])
+      setCode(country.callingCode[0])
 
       if (props.withMask) {
         const mask = getMaskForCountry(country.cca2)
@@ -125,33 +120,34 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
       }
 
       props.onChangeText?.(raw)
-      props.onChangeFormattedText?.(
-        callingCode ? `+${callingCode}${raw}` : raw
-      )
+
+      if (props.onChangeFormattedText) {
+        props.onChangeFormattedText(code ? `+${code}${raw}` : raw)
+      }
     },
-    [callingCode, countryCode, props]
+    [code, countryCode, props]
   )
 
   React.useImperativeHandle(ref, () => ({
     getCountryCode: () => countryCode,
-    getCallingCode: () => callingCode,
+    getCallingCode: () => code,
 
     setCountryCode: async (cca2: CountryCode) => {
-      const cc = await getCallingCode(cca2)
-      if (!cc) return
+      const callingCode = await getCallingCode(cca2)
+      if (!callingCode) return
 
       applyCountry({
         cca2,
-        callingCode: [cc],
+        callingCode: [callingCode],
       } as Country)
     },
 
-    setCallingCode: async (cc: string) => {
-      const cca2 = await getCountryCodeByCallingCode(cc)
+    setCallingCode: async (callingCode: string) => {
+      const cca2 = await getCountryCodeByCallingCode(callingCode)
 
       applyCountry({
         cca2,
-        callingCode: [cc],
+        callingCode: [callingCode],
       } as Country)
     },
 
@@ -168,7 +164,7 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
       const clean = number.startsWith("0") ? number.slice(1) : number
       return {
         number: clean,
-        formattedNumber: callingCode ? `+${callingCode}${clean}` : clean,
+        formattedNumber: code ? `+${code}${clean}` : clean,
       }
     },
   }))
@@ -176,14 +172,10 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
   const {
     withShadow,
     withDarkTheme,
-    codeTextStyle,
-    textInputStyle,
-    textInputProps,
-    flagButtonStyle,
     containerStyle,
     textContainerStyle,
-    renderDropdownImage,
-    disableArrowIcon,
+    textInputStyle,
+    textInputProps,
     placeholder,
     showCountryCode = true,
     countryPickerProps = {
@@ -195,50 +187,32 @@ const PhoneInput = React.forwardRef<PhoneInputRefType, any>((props, ref) => {
     <CountryModalProvider>
       <View style={[styles.container, withShadow && styles.shadow, containerStyle]}>
         <TouchableOpacity
-          style={[styles.flagButtonView, flagButtonStyle]}
           disabled={disabled}
+          style={styles.flagButtonView}
           onPress={() => setModalVisible(true)}
         >
           <CountryPicker
-            onSelect={onSelect}
-            countryCode={countryCode}
-            withFlag
-            withCallingCode
             visible={modalVisible}
             onClose={() => setModalVisible(false)}
-            renderFlagButton={() => (
-              <Flag
-                countryCode={countryCode}
-                flagSize={DEFAULT_THEME.flagSize}
-              />
-            )}
+            countryCode={countryCode}
+            withCallingCode
+            withFlag
+            onSelect={onSelect}
             {...countryPickerProps}
           />
-
-          {showCountryCode && callingCode && (
-            <Text style={[styles.codeText, codeTextStyle]}>
-              {`+${callingCode}`}
-            </Text>
-          )}
-
-          {!disableArrowIcon &&
-            (renderDropdownImage ?? (
-              <Image
-                source={{ uri: dropDown }}
-                resizeMode="contain"
-                style={styles.dropDownImage}
-              />
-            ))}
         </TouchableOpacity>
 
         <View style={[styles.textContainer, textContainerStyle]}>
+          {showCountryCode && code && (
+            <Text style={styles.codeText}>{`+${code}`}</Text>
+          )}
           <TextInput
-            style={[styles.numberText, textInputStyle]}
-            placeholder={placeholder}
-            onChangeText={onChangeText}
             value={props.withMask ? displayValue : number}
-            editable={!disabled}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
             keyboardType="phone-pad"
+            editable={!disabled}
+            style={[styles.numberText, textInputStyle]}
             {...textInputProps}
           />
         </View>
